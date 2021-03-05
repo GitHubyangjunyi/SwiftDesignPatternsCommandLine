@@ -11,7 +11,7 @@ import Foundation
 // 对象模版模式       ObjectTemplate
 // 原型模式          Prototype
 // 单例模式         Singleton
-
+// 对象池模式        ObjectPool
 
 
 var data: Int? = nil
