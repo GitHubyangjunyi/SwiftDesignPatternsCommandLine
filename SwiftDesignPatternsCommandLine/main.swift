@@ -12,7 +12,15 @@ import Foundation
 // 原型模式          Prototype
 // 单例模式         Singleton
 // 对象池模式        ObjectPool
-
+// 对象池懒加载       ObjectPOOLLazy
+// 对象池对象重用      ObjectPOOLReusable
+// 对象池空池策略      ObjectPOOLEmpty
+// 对象池枯竭处理      ObjectPOOLExhausted
+// 对象池弹性        ObjectPOOLElastic
+// 对象池分配策略      ObjectPOOLAllocation/ObjectPOOLAllocationLess
+//工厂方法模式使用全局函数FactoryMethod
+//
+//
 
 var data: Int? = nil
 

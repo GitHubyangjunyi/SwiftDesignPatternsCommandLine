@@ -1,13 +1,14 @@
 //
 //  main.swift
-//  ObjectPOOLLazy
+//  ObjectPOOLReusable
 //
 //  Created by 杨俊艺 on 2021/3/5.
 //
 
 import Foundation
 
-class Book {
+@objc class Book: NSObject, PoolItem {
+    
     let author: String
     let title: String
     let stockNumber: Int
@@ -21,6 +22,16 @@ class Book {
         self.stockNumber = stockNumber
     }
     
+    var canReuse: Bool {
+        get {
+            let reusable = checkoutCount < 5
+            if !reusable {
+                print("废弃书本: \(stockNumber)")
+            }
+            return reusable
+        }
+    }
+    
 }
 
 class BookSaller {
@@ -29,7 +40,11 @@ class BookSaller {
     }
 }
 
-class Pool<T> {
+@objc protocol PoolItem {
+    var canReuse: Bool { get }
+}
+
+class Pool<T: AnyObject> {
     private let semaphore: DispatchSemaphore
     private let arrayQ = DispatchQueue.init(label: "arrayQ")
     
@@ -61,9 +76,13 @@ class Pool<T> {
     
     func returnPool(item: T) {
         arrayQ.async { [self] in
-            data.append(item)
-            print("\((item as! Book).stockNumber) 回到图书馆!")
-            semaphore.signal()
+            let pitem = item as AnyObject as? PoolItem
+            // 如果pitem没有实现协议或者实现了协议且可以重用就返回给对象池
+            if pitem == nil || pitem!.canReuse {
+                data.append(item)
+                print("\((item as! Book).stockNumber) 回到图书馆!")
+                semaphore.signal()
+            }
         }
     }
     
@@ -76,7 +95,7 @@ class Pool<T> {
 
 class Library {
     
-    static let singleton = Library(stockLevel: 200)
+    static let singleton = Library(stockLevel: 5)
     private let pool: Pool<Book>
     
     private init(stockLevel: Int) {
@@ -122,8 +141,8 @@ class Library {
 var queue = DispatchQueue.init(label: "workQ", attributes: .concurrent)
 var group = DispatchGroup.init()
 
-
-for i in 1...10 {
+// 请求次数增加将会卡住
+for i in 1...20 {
     queue.async(group: group, qos: .default, flags: []) {
         let book = Library.checkoutBook(reader: "读者#\(i)")
         if book != nil {
@@ -137,8 +156,6 @@ for i in 1...10 {
 group.wait()
 print("--------------------")
 Library.printReport()
-
 // 防止有时候Library.printReport()没有执行
 Library.printReport()
-
 
